@@ -23,3 +23,12 @@ latest_model.pt
 *.nii
 *.nii.gz
 *.pdf
+
+# Local subject data / samples (do not publish)
+sub-URMC06/
+TRACK_Sample_Image/
+sample_results/
+
+# Misc local artifacts
+*.docx
+.DS_Store
