@@ -32,3 +32,6 @@ See `QUICK_START.md` for full command details.
 
 Method reference paper:
 - https://arxiv.org/abs/2305.19643
+
+Original upstream repository:
+- https://github.com/ci-ber/autoDDPM
