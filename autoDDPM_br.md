@@ -1,6 +1,8 @@
-# Builder Review — autoDDPM (Bercea et al. 2023) + production inference implementation
+# Builder Review — autoDDPM paper and upstream repository
 
-Concise review using the same builder-oriented dimensions reflected in `LeGUI_br.md` (usability, reproducibility, performance, generalization, clinical relevance, interpretability, integration, and limitations), adapted for this repository's single-subject production workflow.
+This review evaluates the **autoDDPM method as presented in the paper and official upstream GitHub repository**, following the builder-review framing used in `LeGUI_br.md`.
+
+**Scope note:** this local implementation was used only as a practical scaffold to understand and test the paper ideas; the assessment target is the paper + original repo.
 
 **Primary references**
 - Paper: https://arxiv.org/abs/2305.19643
@@ -10,73 +12,76 @@ Concise review using the same builder-oriented dimensions reflected in `LeGUI_br
 
 ## Context
 
-autoDDPM is a diffusion-based anomaly detection method for medical imaging centered on:
+autoDDPM addresses a known issue in diffusion-based anomaly detection: reconstruction-only pipelines can produce weakly controlled anomaly maps and incoherent pseudo-healthy reconstructions near pathology boundaries.
 
-1. **Mask**: initial anomaly likelihood map from reconstruction and perceptual/residual differences  
-2. **Stitch**: combine original context with pseudo-healthy regions  
-3. **Re-sample**: inpaint for coherent pseudo-healthy reconstruction
+The paper introduces a structured 3-stage pipeline:
 
-This implementation focuses on **single-subject T1w inference** with pretrained weights and operational controls via `./auto` (`install`, `start`, `stop`, `logs`, `checks`).
+1. **Mask**: compute coarse anomaly likelihood from reconstruction residuals and perceptual difference (LPIPS)
+2. **Stitch**: combine original context with pseudo-healthy regions
+3. **Re-sample**: perform joint noised inpainting for global coherence
+
+This explicitly moves beyond "residual only" anomaly scoring toward a compositional reconstruction process.
 
 ---
 
 ## Platform fit and reproducibility
 
-### Usability
-- Strong for deployment: one command surface for operational runs and log management.
-- Practical defaults for production-style use (`noise_recon=200`, `noise_inpaint=50`, `resample_steps=5`, threshold configurable).
-- Main operational friction remains GPU/runtime setup and model weight provisioning.
+### Usability (paper + upstream)
+- Upstream repository provides full research framework components (`core`, `data`, `projects`, `model_zoo`, `net_utils`) for training/evaluation/inference.
+- Setup is research-grade rather than minimal production-grade: dataset splits and config wiring are required for the full pipeline.
+- Practical usage requires understanding thresholding strategy and dataset alignment, not just model execution.
 
 ### Reproducibility
-- Good infrastructure reproducibility through pinned command paths and explicit parameterized CLI.
-- Scientific reproducibility is method-consistent, but threshold behavior remains **data-distribution dependent**.
-- For sites without healthy calibration sets, `threshold=-1` provides a documented fallback (auto per-scan thresholding).
+- Method reproducibility is supported through explicit config-driven parameters and code availability.
+- Exact metric replication still depends on matching data preprocessing, split definitions, and threshold calibration procedures.
+- Threshold policy is explicitly dataset-dependent in the README/paper context; transfer without recalibration can degrade reliability.
 
 ---
 
 ## Performance, generalization, and comparison
 
-### Performance
-- Inference is tractable for full volumes on GPU (minutes-scale), with clear speed/memory tradeoffs via `batch_size`.
-- Runtime/throughput are sensitive to hardware class and scheduler environment.
+### Performance signal
+- The paper reports improvement over diffusion anomaly baselines by coupling anomaly masking with stitch-and-resample harmonization.
+- Main gains are in localization quality and reconstruction consistency, not just lower reconstruction error.
 
 ### Generalization
-- Method generalizes as anomaly scoring, but absolute binary threshold transfer is limited across domains/scanners.
-- Fixed `0.13` is paper-aligned for the original setup; local adaptation is usually required for robust operating points.
+- autoDDPM is designed to be more robust across anomaly appearances than pure reconstruction-difference methods.
+- Nevertheless, operating thresholds remain sensitive to domain shift (scanner/protocol/population effects).
 
-### Comparison signal
-- Compared with pure reconstruction-difference baselines, autoDDPM's stitch + re-sample pipeline improves structural coherence of pseudo-healthy reconstructions and can improve anomaly localization stability.
+### Comparative value
+- Compared with vanilla anoDDPM-style pipelines, the stitch + resample stages are the key differentiator for coherent pseudo-healthy image synthesis and cleaner anomaly focus.
 
 ---
 
 ## Clinical relevance, interpretability, and integration
 
 ### Clinical relevance
-- Useful as a **research/decision-support anomaly localization tool** for prioritization and QC workflows.
-- Not a standalone diagnostic system; outputs require expert interpretation and contextual imaging review.
+- Strong research utility for pathology localization support and anomaly prioritization workflows.
+- Not a stand-alone diagnostic endpoint; outputs require expert imaging interpretation and local validation practices.
 
 ### Interpretability
-- Strength: continuous anomaly maps + binary masks + reconstruction artifacts are inspectable and auditable.
-- Limitation: final binary interpretation remains threshold-sensitive and site-dependent.
+- Method outputs are interpretable by design: continuous anomaly map, thresholded masks, and pseudo-healthy reconstruction.
+- Interpretation stability depends on threshold governance and QA practices.
 
-### Integration potential
-- Good fit for HPC/Slurm operations through the repository CLI and log controls.
-- Can be inserted into existing MRI processing pipelines as an inference stage without requiring full dataset-level framework runs.
+### Integration
+- Upstream project integrates with research workflows through config-driven framework execution.
+- Production adoption typically requires additional operational wrappers, deployment hardening, and local policy for threshold/QC.
 
 ---
 
 ## Limitations and failure modes
 
-- Threshold calibration remains the dominant source of site-specific variability.
-- False positives can increase in scans with artifacts or domain shift.
-- Full framework evaluation (`core/Main.py`) still requires dataset CSV structure and curated assets; this repo intentionally minimizes to inference essentials.
+- Dataset-specific threshold dependency is a central limitation for direct cross-site transfer.
+- False positives can increase under artifact-heavy scans or strong distribution shift.
+- Full pipeline setup has non-trivial dependency and dataset-structure requirements.
 
 ---
 
 ## Builder verdict
 
-This implementation is **production-practical for single-subject autoDDPM inference**: it preserves the method's core logic, adds operational reliability, and reduces setup complexity.  
-The main residual risk is **threshold governance** across domains; teams should standardize local QC and threshold policy before broader clinical-facing use.
+As a **method contribution**, autoDDPM is a meaningful advancement over reconstruction-only diffusion anomaly detection by introducing an explicit Mask -> Stitch -> Re-sample strategy that improves coherence and practical anomaly localization behavior.
+
+As a **reproducible research artifact**, the upstream code is strong but still requires careful data/config/threshold alignment to reproduce paper-level behavior.
 
 ---
 
