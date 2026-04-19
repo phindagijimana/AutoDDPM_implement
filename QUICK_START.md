@@ -1,16 +1,13 @@
 # autoDDPM Quick Start
 
-This project supports two usage modes:
-
-- `inference_clean.py`: single-subject inference with a pretrained weight (no dataset CSV needed)
-- `core/Main.py`: official framework evaluation/training (requires dataset CSVs and data layout)
+This project focuses on single-subject inference with pretrained weights.
 
 ## Single-Subject Inference (Recommended)
 
 1. Activate environment:
 
 ```bash
-source ~/Documents/autoddpm_env/bin/activate
+source ~/.venvs/autoddpm/bin/activate
 cd /path/to/autoDDPM
 ```
 
@@ -41,7 +38,7 @@ Use the built-in CLI for install/start/stop/logs/checks.
 cd /path/to/autoDDPM
 
 # environment/dependency setup
-./auto install --venv ~/Documents/autoddpm_env --with-wandb
+./auto install --venv ~/.venvs/autoddpm --with-wandb
 
 # preflight checks
 ./auto checks --input "/path/to/subject_T1w.nii.gz" --output "results_subject"
@@ -70,13 +67,3 @@ The output folder contains:
 - `*_binary_95th.nii.gz`
 - `*_middle_slice.png`
 - `*_stats.txt`
-
-## Full Framework Pipeline (Optional)
-
-Run only if you need official dataset-level evaluation:
-
-```bash
-python core/Main.py --config_path ./projects/autoddpm/autoddpm.yaml
-```
-
-This mode requires valid dataset CSV files and corresponding image paths.

@@ -336,7 +336,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_install = sub.add_parser("install", help="Set up environment and dependencies")
-    p_install.add_argument("--venv", default="~/Documents/autoddpm_env", help="Virtualenv path")
+    p_install.add_argument("--venv", default="~/.venvs/autoddpm", help="Virtualenv path")
     p_install.add_argument("--with-torch", action="store_true", help="Install torch+torchvision")
     p_install.add_argument("--with-wandb", action="store_true", help="Install wandb")
     p_install.set_defaults(func=cmd_install)
@@ -353,7 +353,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_start.add_argument("--device", default="cuda")
     p_start.add_argument("--slurm", action="store_true", default=True, help="Run via sbatch (default on)")
     p_start.add_argument("--local", dest="slurm", action="store_false", help="Run as local background process")
-    p_start.add_argument("--venv-activate", default="~/Documents/autoddpm_env/bin/activate")
+    p_start.add_argument("--venv-activate", default="~/.venvs/autoddpm/bin/activate")
     p_start.add_argument("--job-name", default="autoDDPM_prod")
     p_start.add_argument("--partition", default="general")
     p_start.add_argument("--time", default="02:00:00")
