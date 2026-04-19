@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.venv/
+venv/
+
+# Local CLI state
+.auto/
+
+# Artifacts and outputs
+logs/
+results_*/
+autoDDPM_outputs/
+full_volume_new_output/
+weights/
+
+# Local data/model binaries
+latest_model.pt
+*.nii
+*.nii.gz
+*.pdf
